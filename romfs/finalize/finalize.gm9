@@ -1,5 +1,5 @@
 # Script for https://3ds.hacks.guide/finalizing-setup
-# Ver. 1.7.1 - Last modified: 2024-03-15
+# Ver. 1.7.1 - Last modified: 2024-03-27
 # GodMode9 scripts can be dangerous!
 # Visit https://gist.github.com/lilyuwuu/8a7ce43263fe498b7fb0a403ea5eaff3 to verify the integrity of this script.
 # Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff)
@@ -17,36 +17,36 @@ if not find "0:/Nintendo 3DS" NULL
 	goto NOSPACE
 end
 
-# Check for MSET9 installation
+# Check for and attempt to fix MSET9-edited ID1
 
-if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" NULL
-	set PREVIEW_MODE "0:/finalize/img/error18.png"
-	echo "Error #18: MSET9 detected\n \nMSET9 is still installed on this console.\nYou MUST remove it before continuing.\nScan the QR code above for instructions.\n \nIf this error persists, ask for help\non Discord: https://discord.gg/MWxPgEp"
-	poweroff
-
-# What is the NULL parameter here for? If I changed it, would it become a variable holding the name for the found folder?
-# Where can I read up on gm9script?
-# It was here https://github.com/d0k3/GodMode9/blob/master/resources/sample/HelloScript.gm9
-# And I was right.
-elif find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????sdmc??b9" MSET9ID1 # Else if because I don't want the user to power on and have the system create another ID1
-	# Silently delete it.
-
-	# Insert preview image here (maybe not?)
-	set PREVIEW_MODE "?> Checking for problems...\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
-
-	echo "Error #18b: MSET9 ID1 detected\n \nMSET9 failed to fully uninject.\n(How did this happen..?)\n \nAttempting to delete it.\nYou will be asked to unlock SD writing permissions.\n \nPress (A) to continue."
-	allow -a 0:
-
- 	# -o = optional, i.e. don't sh*t itself when it fails. I don't want this to fail.
-	if not rm -s $[MSET9ID1] # Pain
-		# Insert preview image here
-		set PREVIEW_MODE "!> Checking for problems...\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
-		#                                                                                                               vvvvvvvvvvvvvvvvvvvv Should stuff this into a variable
-		echo "Fatal error #18b: Failed to remove MSET9 ID1\n \nFailed to cleanup MSET9.\n(What is going on here..?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
+if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" CURRENT
+	echo "Error #18a: MSET9-edited ID1 detected\n \nMSET9 not completely removed.\nAttempting to fix it.\n \nYou may be asked to unlock SD writing permissions.\n \nPress (A) to continue."
+	allow "0:/Nintendo 3DS"
+	strsplit -b REAL $[CURRENT] "_"
+	if not mv $[CURRENT] $[REAL]
+		echo "Fatal Error #18a: Unable to Fix MSET9-Edited ID1\n \nFailed to fix your ID1.\nPlease remove MSET9 manually as it is said in the guide.\nIf you already tried to remove it manually and this came up again,\njoin our Discord and ask for help: https://discord.gg/MWxPgEp"
 		poweroff
-
+	end
+	set FIXEDMSET9 YES
 end
 
+# Check for and attempt to delete MSET9 ID1
+
+if find "0:/Nintendo 3DS/$[SYSID0]/*sdmc*b9" MSET9ID1
+	echo "Error #18b: MSET9 ID1 detected\n \nMSET9 not completely removed.\n \nAttempting to delete it.\nYou may be asked to unlock SD writing permissions.\n \nPress (A) to continue."
+	allow "0:/Nintendo 3DS"
+	if not rm -s $[MSET9ID1]
+		echo "Fatal Error #18b: Unable to remove MSET9 ID1\n \nFailed to remove MSET9 ID1.\nPlease remove MSET9 manually as it is said in the guide.\nIf you already tried to remove it manually and this came up again,\njoin our Discord and ask for help: https://discord.gg/MWxPgEp"
+		poweroff
+	end
+	set FIXEDMSET9 YES
+end
+
+# Refreshes IDs after fixing MSET9
+
+if chk $[FIXEDMSET9] YES
+	switchsd "Fixed Issues with MSET9.\n \nTo continue finalizing, please remove and reinsert\nyour SD card to refresh Console IDs."
+end
 
 # Check for missing essential.exefs
 
@@ -63,7 +63,7 @@ if find 0:/gm9/flags/BACKUPFLAG NULL
 end
 
 if chk $[SDFREE] INVALID # should not happen
-    	set PREVIEW_MODE "0:/finalize/img/error07.png"
+    set PREVIEW_MODE "0:/finalize/img/error07.png"
     echo "Fatal Error #07: No SD size\n \nCould not get SD card size.\nThis should not happen.\nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 else
     strsplit -f -b SDFREE_VALUE $[SDFREE] " "
