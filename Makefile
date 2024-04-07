@@ -13,7 +13,7 @@ builds/finalize_helper.firm: builds/finalize.romfs
 	@sed -i s/FINALIZE_SHA256SUM/$(shell sha256sum $< | awk '{print $$1}')/g GodMode9/data/autorun.gm9
 	@$(MAKE) -C GodMode9 SCRIPT_RUNNER=1
 	@cp GodMode9/output/GodMode9.firm $@
-
+	@printf '\x01' | dd conv=notrunc bs=1 seek=16 of=$@
 clean:
 	@rm -rf builds
 	@$(MAKE) -C GodMode9 clean
