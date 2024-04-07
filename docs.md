@@ -1,5 +1,5 @@
 # Troubleshooting script errors
-*As of v1.7.1 (2024/03/15)*
+*As of v1.8.0 (2024/04/07)*
 
 ## Script-integrated error checking (finalize.gm9)
 
@@ -120,12 +120,37 @@
 ---
 
 - **ERROR**: "Error #18: MSET9 detected"
-- **CAUSE**: MSET9 detected because user ID0 folder has a folder with "_user-id1" appended to it
-- **FIX**: Remove MSET9 (manually if failed to remove through mset9.py/MSET9 Installer, i.e. Chromebook)
+- **CAUSE**: Script is outdated (MSET9 is now properly detected and removed by script)
+- **FIX**: Remove MSET9 (manually if failed to remove through mset9.py/MSET9 Installer, i.e. Chromebook), or update script and have the script try to do it for you
 
 ---
 
-> NOTE: There are no errors #19 or #20; I have no idea why I skipped them, I think I thought I already used them when I didn't
+- **ERROR**: "Error #18a: MSET9 detected (ID1 still affected by MSET9)
+- **CAUSE**: Script detected `<ID1>_user-id1`, which appears when MSET9 is not removed (may be user error, may be Chromebook/Android issue)
+- **FIX**: Follow prompts (A, A, keycombo) to remove MSET9. User will have to go through blue screen THIS IS NOT RECOMMENDED due to interaction with Nintendo 3DS folder, as well as eject and reinsert SD to force GodMode9 to mount A:/.
+
+---
+
+- **ERROR**: "Error #18b: MSET9 detected (MSET9 hax'd ID1 is still present)
+- **CAUSE**: Script detected MSET9 itself, which will happen if MSET9 is not installed (however, this should only appear if `_user-id1` is not found, meaning something weird probably happened)
+- **FIX**: Follow prompts (A, A, keycombo) to remove MSET9. User will have to go through blue screen THIS IS NOT RECOMMENDED due to interaction with Nintendo 3DS folder, as well as eject and reinsert SD to force GodMode9 to mount A:/.
+
+---
+
+- **ERROR**: "Fatal Error #19a: Could not remove MSET9 (Failed to rename ID1)
+- **CAUSE**: Rename process failed for some reason. Sketchy SD? Weird folder name?
+- **FIX**: Remove MSET9 manually (via mset9.py or MSET9 Installer, or failing that, by manually deleting MSET9 folder and renaming `_user-id1`)
+
+
+---
+
+- **ERROR**: "Fatal Error #19b: Could not remove MSET9 (Failed to remove hax'd ID1)
+- **CAUSE**: Delete failed for some reason. Sketchy SD? 
+- **FIX**: Remove MSET9 manually (via mset9.py or MSET9 Installer, or failing that, by manually deleting MSET9 folder)
+
+---
+
+> NOTE: There is no error #20; I have no idea why I skipped them, I think I thought I already used them when I didn't
 
 ---
 
