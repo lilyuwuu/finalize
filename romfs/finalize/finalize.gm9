@@ -1,5 +1,5 @@
 # Script for https://3ds.hacks.guide/finalizing-setup
-# Ver. 1.7.1 - Last modified: 2024-03-15
+# Ver. 1.8.0 - Last modified: 2024-04-07
 # GodMode9 scripts can be dangerous!
 # Visit https://gist.github.com/lilyuwuu/8a7ce43263fe498b7fb0a403ea5eaff3 to verify the integrity of this script.
 # Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff)
@@ -17,12 +17,47 @@ if not find "0:/Nintendo 3DS" NULL
 	goto NOSPACE
 end
 
-# Check for MSET9 installation
+# Check for and attempt to fix edited MSET9
 
-if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" NULL
-	set PREVIEW_MODE "0:/finalize/img/error18.png"
-	echo "Error #18: MSET9 detected\n \nMSET9 is still installed on this console.\nYou MUST remove it before continuing.\nScan the QR code above for instructions.\n \nIf this error persists, ask for help\non Discord: https://discord.gg/MWxPgEp"
-	poweroff
+if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" CURRENT
+	set PREVIEW_MODE "0:/finalize/img/error18a.png"
+	echo "Error #18a: MSET9 detected\n \nID1 still affected by MSET9.\nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
+	allow "0:/Nintendo 3DS"
+	strsplit -b REAL $[CURRENT] "_"
+	if not mv $[CURRENT] $[REAL]
+		set PREVIEW_MODE "0:/finalize/img/error19a.png"
+		echo "Fatal Error #19a: Could not remove MSET9\n \nFailed to rename ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
+		poweroff
+	end
+	if find "0:/Nintendo 3DS/$[SYSID0]/*sdmc*b9" MSET9ID1
+		if not rm -s $[MSET9ID1]
+			set PREVIEW_MODE "0:/finalize/img/error19b.png"
+			echo "Fatal Error #19b: Could not remove MSET9\n \nFailed to remove hax'd ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
+		poweroff
+		end
+	end
+	set FIXEDMSET9 YES
+end
+
+# Check for and attempt to delete hax'd MSET9
+
+if find "0:/Nintendo 3DS/$[SYSID0]/*sdmc*b9" MSET9ID1
+	set PREVIEW_MODE "0:/finalize/img/error18b.png"
+	echo "Error #18b: MSET9 detected\n \nMSET9 hax'd ID1 is still present.\n \nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
+	allow "0:/Nintendo 3DS"
+	if not rm -s $[MSET9ID1]
+		set PREVIEW_MODE "0:/finalize/img/error19b.png"
+		echo "Fatal Error #19b: Could not remove MSET9\n \nFailed to remove hax'd ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
+		poweroff
+	end
+	set FIXEDMSET9 YES
+end
+
+# Eject and reinsert SD to mount SYSNAND SD
+
+if chk $[FIXEDMSET9] YES
+	set PREVIEW_MODE "0:/finalize/img/mset9_reinsert.png"
+	switchsd "MSET9 has been removed.\n \nEject and reinsert your SD card to continue."
 end
 
 # Check for missing essential.exefs
@@ -40,7 +75,7 @@ if find 0:/gm9/flags/BACKUPFLAG NULL
 end
 
 if chk $[SDFREE] INVALID # should not happen
-    	set PREVIEW_MODE "0:/finalize/img/error07.png"
+    set PREVIEW_MODE "0:/finalize/img/error07.png"
     echo "Fatal Error #07: No SD size\n \nCould not get SD card size.\nThis should not happen.\nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 else
     strsplit -f -b SDFREE_VALUE $[SDFREE] " "
