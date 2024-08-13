@@ -276,7 +276,7 @@ rm -o -s 0:/soundhax-kor-o3ds-v3.xand4.x.m4a
 rm -o -s 0:/soundhax-twn-o3ds-post5.0.4m4a
 rm -o -s 0:/soundhax-twn-o3ds-v3.xand4.x.m4a
 rm -o -s 0:/soundhax-usa-n3ds.m4a
-rm -o -s 0:/soundhax-usa-o3ds-pot5.0.m4a
+rm -o -s 0:/soundhax-usa-o3ds-post5.0.m4a
 rm -o -s 0:/soundhax-usa-o3ds-pre2.1.m4a
 rm -o -s 0:/soundhax-usa-o3ds-v2.1and2.2.m4a
 rm -o -s 0:/soundhax-usa-o3ds-v3.xand4.x.m4a
