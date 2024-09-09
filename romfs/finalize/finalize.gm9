@@ -17,16 +17,19 @@ set SEED ""
 
 if	find -s 1:/rw/sys/SecureInfo_A NULL
 elif	find -s 1:/rw/sys/SecureInfo_B NULL
-else	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]SecureInfo\n" # Does GodMode9 support \t
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]SecureInfo\n" # Does GodMode9 support \t
 end
 
 if	find -s 1:/rw/sys/LocalFriendCodeSeed_B NULL
 elif	find -s 1:/rw/sys/LocalFriendCodeSeed_A NULL
-else	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]LocalFriendCodeSeed\n"
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]LocalFriendCodeSeed\n"
 end
 
 if	find -s 1:/private/movable.sed SEED
-else	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]movable.sed\n"
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]movable.sed\n"
 end
 
 # Check for missing essential.exefs
