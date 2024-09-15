@@ -1,8 +1,8 @@
 # Script for https://3ds.hacks.guide/finalizing-setup
-# Ver. 1.8.0 - Last modified: 2024-04-07
+# Ver. 1.9.0 - Last modified: 2024-09-15
 # GodMode9 scripts can be dangerous!
-# Visit https://gist.github.com/lilyuwuu/8a7ce43263fe498b7fb0a403ea5eaff3 to verify the integrity of this script.
-# Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff)
+# Visit https://github.com/hacks-guide/finalize/releases to verify the integrity of this script.
+# Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff), J0n_b0 (MSET9 check), Naim2000 (better Nintendo 3DS folder check)
 
 rm -o -s 0:/luma/payloads/finalize_helper.firm
 rm -o -s 0:/luma/payloads/*_finalize_helper.firm
@@ -33,8 +33,8 @@ end
 
 if not find S:/essential.exefs NULL
 	if chk -u $[MISSINGESSENTIAL] ""
-		# <IMAGE>
-		echo "Fatal Error: Missing console-unique files\n \nThe following files are missing from the NAND:\n$[MISSINGESSENTIAL]\n \nPlease ask for help on Discord:\nhttps://discord.gg/MWxPgEp"
+		set PREVIEW_MODE "0:/finalize/img/error30.png"
+		echo "Fatal Error #30: Missing console-unique files\n \nThe following files are missing from the NAND:\n$[MISSINGESSENTIAL]\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 	else
 		set PREVIEW_MODE "0:/finalize/img/error02.png"
@@ -63,8 +63,8 @@ end
 # We don't. Why not?
 
 if not shaget $[SEED]@110:10 NULL # This should end up failing normally if SEED is "". I'd hope. Someone test this.
-	# <IMAGE>
-	echo "Fatal Error: Missing encryption key\n \nThe system is missing movable.sed from NAND.\n(How did this happen...?)\n \nPlease ask for help on Discord:\nhttps://discord.gg/MWxPgEp"
+	set PREVIEW_MODE "0:/finalize/img/error31.png"
+	echo "Fatal Error #31: Missing encryption key\n \nThe system is missing movable.sed from NAND.\n(How did this happen...?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	# At this stage, we have essential.exefs.
 	# I could copy it. But how do we know that this isn't like, a failed/cancelled Manual Movable Moveover? The user might have been doing something.
 	poweroff
@@ -77,8 +77,8 @@ if not find "0:/Nintendo 3DS/$[SYSID0]" SYSID0PATH
 		goto NOSPACE
 	end
 
-	# <Image?>
-	echo "Information: Empty Nintendo 3DS folder\n \nThe Nintendo 3DS folder does not have any data for this console.\nPlease let your 3DS reach the HOME menu, then run this script again."
+	set PREVIEW_MODE "0:/finalize/img/error33.png"
+	echo "Information #33: Empty Nintendo 3DS folder\n \nThe Nintendo 3DS folder has no data for this console.\nTurn on your console with the SD inserted,\nallow it to reach the HOME Menu, then run\nthis script again."
 	reboot
 end
 
@@ -128,8 +128,8 @@ end
 
 # SYSID0 path exists at this point, yet not SYSNAND SD. Why?
 
-# <IMAGE>
-echo "Error: Nintendo 3DS folder is inaccessible\n \nGodMode9 is unable to access the Nintendo 3DS folder properly.\n(How did this happen..?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
+set PREVIEW_MODE "0:/finalize/img/error32.png"
+echo "Fatal Error #32: Nintendo 3DS folder is inaccessible\n \nCould not access the Nintendo 3DS folder.\n(How did this happen..?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 poweroff
 
 @SYSNAND_SD_OK
@@ -248,6 +248,9 @@ set PREVIEW_MODE "Checking for problems... DONE\nAsking for permission... DONE\n
 # Install base homebrew applications
 
 if not install 0:/finalize/Anemone3DS.cia
+	if not find 0:/finalize/img/error14a.png NULL
+		echo "Error #14g: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\nAlso, script graphics are missing.\n \nTry re-running finalize_helper, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+		poweroff
 	set PREVIEW_MODE "0:/finalize/img/error14a.png"
 	echo "Error #14a: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
 	poweroff
