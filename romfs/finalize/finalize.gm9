@@ -254,6 +254,7 @@ if not install 0:/finalize/Anemone3DS.cia
 	if not find 0:/finalize/img/error14a.png NULL
 		echo "Error #14g: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\nAlso, script graphics are missing.\n \nTry re-running finalize_helper, or ask for help\non Discord: https://discord.gg/MWxPgEp"
 		poweroff
+	end
 	set PREVIEW_MODE "0:/finalize/img/error14a.png"
 	echo "Error #14a: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
 	poweroff
