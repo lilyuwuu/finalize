@@ -1,12 +1,50 @@
 # Script for https://3ds.hacks.guide/finalizing-setup
-# Ver. 1.8.0 - Last modified: 2024-04-07
+# Ver. 1.9.0 - Last modified: 2024-09-15
 # GodMode9 scripts can be dangerous!
-# Visit https://gist.github.com/lilyuwuu/8a7ce43263fe498b7fb0a403ea5eaff3 to verify the integrity of this script.
-# Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff)
+# Visit https://github.com/hacks-guide/finalize/releases to verify the integrity of this script.
+# Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff), J0n_b0 (MSET9 check), Naim2000 (better Nintendo 3DS folder check)
 
 rm -o -s 0:/luma/payloads/finalize_helper.firm
+rm -o -s 0:/luma/payloads/*_finalize_helper.firm
 
 set PREVIEW_MODE "> Checking for problems...\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
+
+# Check for missing essentials
+# BuildEssentialBackup() will return 1 (failure) if any of these files are missing. As well as nand_hdr.bin, but like lol
+
+set MISSINGESSENTIAL ""
+set SEED ""
+
+if	find -s 1:/rw/sys/SecureInfo_A NULL
+elif	find -s 1:/rw/sys/SecureInfo_B NULL
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]SecureInfo\n" # Does GodMode9 support \t
+end
+
+if	find -s 1:/rw/sys/LocalFriendCodeSeed_B NULL
+elif	find -s 1:/rw/sys/LocalFriendCodeSeed_A NULL
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]LocalFriendCodeSeed\n"
+end
+
+if	find -s 1:/private/movable.sed SEED
+else
+	set MISSINGESSENTIAL "$[MISSINGESSENTIAL]movable.sed\n"
+end
+
+# Check for missing essential.exefs
+
+if not find S:/essential.exefs NULL
+	if chk -u $[MISSINGESSENTIAL] ""
+		set PREVIEW_MODE "0:/finalize/img/error30.png"
+		echo "Fatal Error #30: Missing console-unique files\n \nThe following files are missing from the NAND:\n$[MISSINGESSENTIAL]\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
+		poweroff
+	else
+		set PREVIEW_MODE "0:/finalize/img/error02.png"
+		echo "Error #02: Missing essential.exefs\n \nessential.exefs does not exist.\nClose and re-open GodMode9,\nmaking sure to say Yes to the\n'Create essential files' popup."
+		poweroff
+	end
+end
 
 # Check for missing Nintendo 3DS folder
 
@@ -17,9 +55,39 @@ if not find "0:/Nintendo 3DS" NULL
 	goto NOSPACE
 end
 
-# Check for and attempt to fix edited MSET9
+# Okay, at this point, we have the Nintendo 3DS folder. But do we have A: ?
 
-if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" CURRENT
+@IS_SYSNAND_SD_OK
+
+if isdir A:
+	goto SYSNAND_SD_OK
+end
+
+# We don't. Why not?
+
+if not shaget $[SEED]@110:10 NULL # This should end up failing normally if SEED is "". I'd hope. Someone test this.
+	set PREVIEW_MODE "0:/finalize/img/error31.png"
+	echo "Fatal Error #31: Missing encryption key\n \nThe system is missing movable.sed from NAND.\n(How did this happen...?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
+	# At this stage, we have essential.exefs.
+	# I could copy it. But how do we know that this isn't like, a failed/cancelled Manual Movable Moveover? The user might have been doing something.
+	poweroff
+end
+
+# Okay, we have an ID0. Is it there?
+
+if not find "0:/Nintendo 3DS/$[SYSID0]" SYSID0PATH
+	if find 0:/finalize/nospace NULL
+		goto NOSPACE
+	end
+
+	set PREVIEW_MODE "0:/finalize/img/error33.png"
+	echo "Information #33: Empty Nintendo 3DS folder\n \nThe Nintendo 3DS folder has no data for this console.\nTurn on your console with the SD inserted,\nallow it to reach the HOME Menu, then run\nthis script again."
+	reboot
+end
+
+# Check for and attempt to fix edited MSET9 ID1
+
+if find "$[SYSID0PATH]/????????????????????????????????_user-id1" CURRENT
 	set PREVIEW_MODE "0:/finalize/img/error18a.png"
 	echo "Error #18a: MSET9 detected\n \nID1 still affected by MSET9.\nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
 	allow "0:/Nintendo 3DS"
@@ -29,7 +97,7 @@ if find "0:/Nintendo 3DS/$[SYSID0]/????????????????????????????????_user-id1" CU
 		echo "Fatal Error #19a: Could not remove MSET9\n \nFailed to rename ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 	end
-	if find "0:/Nintendo 3DS/$[SYSID0]/*sdmc*b9" MSET9ID1
+	if find "$[SYSID0PATH]/*sdmc*b9" MSET9ID1
 		if not rm -s $[MSET9ID1]
 			set PREVIEW_MODE "0:/finalize/img/error19b.png"
 			echo "Fatal Error #19b: Could not remove MSET9\n \nFailed to remove hax'd ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
@@ -41,7 +109,7 @@ end
 
 # Check for and attempt to delete hax'd MSET9
 
-if find "0:/Nintendo 3DS/$[SYSID0]/*sdmc*b9" MSET9ID1
+if find "$[SYSID0PATH]/*sdmc*b9" MSET9ID1
 	set PREVIEW_MODE "0:/finalize/img/error18b.png"
 	echo "Error #18b: MSET9 detected\n \nMSET9 hax'd ID1 is still present.\n \nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
 	allow "0:/Nintendo 3DS"
@@ -58,15 +126,16 @@ end
 if chk $[FIXEDMSET9] YES
 	set PREVIEW_MODE "0:/finalize/img/mset9_reinsert.png"
 	switchsd "MSET9 has been removed.\n \nEject and reinsert your SD card to continue."
+	goto IS_SYSNAND_SD_OK
 end
 
-# Check for missing essential.exefs
+# SYSID0 path exists at this point, yet not SYSNAND SD. Why?
 
-if not find S:/essential.exefs NULL
-	set PREVIEW_MODE "0:/finalize/img/error02.png"
-	echo "Error #02: Missing essential.exefs\n \nessential.exefs does not exist.\nClose and re-open GodMode9,\nmaking sure to say Yes to the\n'Create essential files' popup."
-	poweroff
-end
+set PREVIEW_MODE "0:/finalize/img/error32.png"
+echo "Fatal Error #32: Nintendo 3DS folder is inaccessible\n \nCould not access the Nintendo 3DS folder.\n(How did this happen..?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
+poweroff
+
+@SYSNAND_SD_OK
 
 # Check for sufficient SD space
 
@@ -97,6 +166,7 @@ else
             goto SDFREE_NEXT
         end
     end
+    fdummy -o -s 0:/finalize/nospace 400
     if chk $[ONTYPE] O3DS
         set PREVIEW_MODE "0:/finalize/img/error04.png"
         echo "Error #04: No space\n \nInsufficient space on SD card.\nYou need 1.0GB, but you have $[SDFREE].\nMake some space, then try again.\n \nTIP: You can temporarily remove the Nintendo 3DS\nand DCIM folders from your SD card\nto make enough space."
@@ -181,6 +251,10 @@ set PREVIEW_MODE "Checking for problems... DONE\nAsking for permission... DONE\n
 # Install base homebrew applications
 
 if not install 0:/finalize/Anemone3DS.cia
+	if not find 0:/finalize/img/error14a.png NULL
+		echo "Error #14g: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\nAlso, script graphics are missing.\n \nTry re-running finalize_helper, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+		poweroff
+	end
 	set PREVIEW_MODE "0:/finalize/img/error14a.png"
 	echo "Error #14a: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
 	poweroff
@@ -327,6 +401,8 @@ rm -o -s 0:/petitcom_eu.icn
 
 ## MSET9
 
+rm -o -s 0:/MSET9-Windows.bat
+rm -o -s 0:/MSET9-macOS.command
 rm -o -s 0:/mset9.bat
 rm -o -s 0:/mset9.command
 rm -o -s 0:/mset9.py

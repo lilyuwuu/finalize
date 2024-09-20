@@ -1,5 +1,5 @@
 # Troubleshooting script errors
-*As of v1.8.0 (2024/04/07)*
+*As of v1.9.0 (2024-09-15)
 
 ## Script-integrated error checking (finalize.gm9)
 
@@ -97,7 +97,13 @@
 
 - **ERROR**: "Error #14b: CIA install fail" (also: 14c, 14d, 14e, 14f)
 - **CAUSE**: CIA after Anemone3DS is corrupt, so at least one CIA succeeded installation but one of them failed
-- **FIX**: Most likely a corrupt file, so have user replace file in SD:/finalize (14b = Checkpoint; 14c = FBI; 14d = ftpd; 14e = HBL; 14f = U-U). Alternatively, title.db issue, so if possible, have user delete `Nintendo 3DS` folder, have 3DS regenerate it, and try again. Alternatively, sketchy SD card (check for errors).
+- **FIX**: Most likely a corrupt file, so have user replace file in SD:/finalize (14b = Checkpoint; 14c = FBI; 14d = ftpd; 14e = HBL; 14f = U-U). Alternatively, title.db issue, so if possible, have user delete `Nintendo 3DS` folder, have 3DS regenerate it, and try again. Alternatively, sketchy SD card (check for errors). INSTALLFLAG can also be used to skip CIA installation if you've already done so via FBI.
+
+---
+
+- **ERROR**: "Error #14g: CIA install fail"
+- **CAUSE**: Anemone3DS failed to install, but the graphics at the top (error14a.png) are also missing. Chances are files didn't get copied from finalize.romfs, somehow.
+- **FIX**: Re-run finalize_helper and try again.
 
 ---
 
@@ -150,7 +156,21 @@
 
 ---
 
-> NOTE: There is no error #20; I have no idea why I skipped them, I think I thought I already used them when I didn't
+- **ERROR**: "Fatal Error #30: Missing console-unique files"
+- **CAUSE**: Some console-unique files are missing from NAND. Chances are the console was tampered with at some point.
+- **FIX**: ??? (This probably shouldn't happen in the first place, and if console-uniques are permanently gone then there's probably not much that can be done in terms of recovering them)
+
+- **ERROR**: "Fatal Error #31: Missing encryption key"
+- **CAUSE**: The console has no movable.sed on NAND. Chances are the console was tampered with at some point.
+- **FIX**: Try to find correct movable.sed (essentials backup, NAND backup), and move it to `1:/private`.
+
+- **ERROR**: "Fatal Error #32: Nintendo 3DS folder is inaccessible"
+- **CAUSE**: Unknown. Possibly a wonky SD card?
+- **FIX**: Try another SD card?
+
+- **ERROR**: "Information #33: Empty Nintendo 3DS folder"
+- **CAUSE**: Chances are the user created the Nintendo 3DS folder by themselves.
+- **FIX**: Boot into HOME Menu with SD inserted so that HOME Menu management data can be created. Then, re-run the script.
 
 ---
 
