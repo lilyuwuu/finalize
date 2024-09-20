@@ -9,6 +9,38 @@ rm -o -s 0:/luma/payloads/*_finalize_helper.firm
 
 set PREVIEW_MODE "> Checking for problems...\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
 
+# First order of business - Grab a hold of finalize.romfs
+if not find G:/finalize/finalize.gm9 NULL
+	if not find 0:/finalize.romfs ROMFS
+		set PREVIEW_MODE "> Checking for problems... :(\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
+		echo "Error #21: finalize.romfs not found\n \nfinalize.romfs could not be found on the SD card.\nCopy it to root of SD and try again."
+		poweroff
+	end
+
+	if not shaget $[ROMFS] ROMFS_SHA256
+		set PREVIEW_MODE "> Checking for problems... :(\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
+		echo "Error #22: finalize.romfs is unreadable\n \nCould not read finalize.romfs.\n(How did this happen..? Did it get corrupt?)\n\nCopy finalize.romfs to your SD card and try again."
+		poweroff
+	end
+
+	if not imgmount $[ROMFS]
+		set PREVIEW_MODE "> Checking for problems... :(\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
+		echo "Error #22: Failed to mount finalize.romfs\n\nCould not mount finalize.romfs.\n(How did this happen..? Did it get corrupt?)\n\nCopy finalize.romfs to your SD card and try again."
+		poweroff
+	end
+end
+
+# Copy finalize files to RAMDRIVE
+if not cp -w -s G:/finalize 9:/finalize
+	# WHAT????
+	set PREVIEW_MODE "> Checking for problems... :(\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
+	echo "Error #22: finalize.romfs is unreadable\n \nCould not copy files from finalize.romfs.\n(How did this happen..? Did it get corrupt?)\n\nCopy finalize.romfs to your SD card and try again."
+	poweroff
+end
+
+# We're done with finalize.romfs now
+imgumount
+
 # Check for missing essentials
 # BuildEssentialBackup() will return 1 (failure) if any of these files are missing. As well as nand_hdr.bin, but like lol
 
@@ -36,11 +68,11 @@ end
 
 if not find S:/essential.exefs NULL
 	if chk -u $[MISSINGESSENTIAL] ""
-		set PREVIEW_MODE "0:/finalize/img/error30.png"
+		set PREVIEW_MODE "9:/finalize/img/error30.png"
 		echo "Fatal Error #30: Missing console-unique files\n \nThe following files are missing from the NAND:\n$[MISSINGESSENTIAL]\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 	else
-		set PREVIEW_MODE "0:/finalize/img/error02.png"
+		set PREVIEW_MODE "9:/finalize/img/error02.png"
 		echo "Error #02: Missing essential.exefs\n \nessential.exefs does not exist.\nClose and re-open GodMode9,\nmaking sure to say Yes to the\n'Create essential files' popup."
 		poweroff
 	end
@@ -66,7 +98,7 @@ end
 # We don't. Why not?
 
 if not shaget $[SEED]@110:10 NULL # This should end up failing normally if SEED is "". I'd hope. Someone test this.
-	set PREVIEW_MODE "0:/finalize/img/error31.png"
+	set PREVIEW_MODE "9:/finalize/img/error31.png"
 	echo "Fatal Error #31: Missing encryption key\n \nThe system is missing movable.sed from NAND.\n(How did this happen...?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	# At this stage, we have essential.exefs.
 	# I could copy it. But how do we know that this isn't like, a failed/cancelled Manual Movable Moveover? The user might have been doing something.
@@ -76,11 +108,11 @@ end
 # Okay, we have an ID0. Is it there?
 
 if not find "0:/Nintendo 3DS/$[SYSID0]" SYSID0PATH
-	if find 0:/finalize/nospace NULL
+	if find 0:/gm9/flags/nospace NULL
 		goto NOSPACE
 	end
 
-	set PREVIEW_MODE "0:/finalize/img/error33.png"
+	set PREVIEW_MODE "9:/finalize/img/error33.png"
 	echo "Information #33: Empty Nintendo 3DS folder\n \nThe Nintendo 3DS folder has no data for this console.\nTurn on your console with the SD inserted,\nallow it to reach the HOME Menu, then run\nthis script again."
 	reboot
 end
@@ -88,18 +120,18 @@ end
 # Check for and attempt to fix edited MSET9 ID1
 
 if find "$[SYSID0PATH]/????????????????????????????????_user-id1" CURRENT
-	set PREVIEW_MODE "0:/finalize/img/error18a.png"
+	set PREVIEW_MODE "9:/finalize/img/error18a.png"
 	echo "Error #18a: MSET9 detected\n \nID1 still affected by MSET9.\nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
 	allow "0:/Nintendo 3DS"
 	strsplit -b REAL $[CURRENT] "_"
 	if not mv $[CURRENT] $[REAL]
-		set PREVIEW_MODE "0:/finalize/img/error19a.png"
+		set PREVIEW_MODE "9:/finalize/img/error19a.png"
 		echo "Fatal Error #19a: Could not remove MSET9\n \nFailed to rename ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 	end
 	if find "$[SYSID0PATH]/*sdmc*b9" MSET9ID1
 		if not rm -s $[MSET9ID1]
-			set PREVIEW_MODE "0:/finalize/img/error19b.png"
+			set PREVIEW_MODE "9:/finalize/img/error19b.png"
 			echo "Fatal Error #19b: Could not remove MSET9\n \nFailed to remove hax'd ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 		end
@@ -110,11 +142,11 @@ end
 # Check for and attempt to delete hax'd MSET9
 
 if find "$[SYSID0PATH]/*sdmc*b9" MSET9ID1
-	set PREVIEW_MODE "0:/finalize/img/error18b.png"
+	set PREVIEW_MODE "9:/finalize/img/error18b.png"
 	echo "Error #18b: MSET9 detected\n \nMSET9 hax'd ID1 is still present.\n \nAttempting to fix it.\n \nPress (A) to continue, then\nenter the key combo if prompted."
 	allow "0:/Nintendo 3DS"
 	if not rm -s $[MSET9ID1]
-		set PREVIEW_MODE "0:/finalize/img/error19b.png"
+		set PREVIEW_MODE "9:/finalize/img/error19b.png"
 		echo "Fatal Error #19b: Could not remove MSET9\n \nFailed to remove hax'd ID1.\nPlease remove MSET9 manually.\nIf you continue to see this prompt,\nask for help on Discord:\nhttps://discord.gg/MWxPgEp"
 		poweroff
 	end
@@ -124,14 +156,14 @@ end
 # Eject and reinsert SD to mount SYSNAND SD
 
 if chk $[FIXEDMSET9] YES
-	set PREVIEW_MODE "0:/finalize/img/mset9_reinsert.png"
+	set PREVIEW_MODE "9:/finalize/img/mset9_reinsert.png"
 	switchsd "MSET9 has been removed.\n \nEject and reinsert your SD card to continue."
 	goto IS_SYSNAND_SD_OK
 end
 
 # SYSID0 path exists at this point, yet not SYSNAND SD. Why?
 
-set PREVIEW_MODE "0:/finalize/img/error32.png"
+set PREVIEW_MODE "9:/finalize/img/error32.png"
 echo "Fatal Error #32: Nintendo 3DS folder is inaccessible\n \nCould not access the Nintendo 3DS folder.\n(How did this happen..?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 poweroff
 
@@ -144,7 +176,7 @@ if find 0:/gm9/flags/BACKUPFLAG NULL
 end
 
 if chk $[SDFREE] INVALID # should not happen
-    set PREVIEW_MODE "0:/finalize/img/error07.png"
+    set PREVIEW_MODE "9:/finalize/img/error07.png"
     echo "Fatal Error #07: No SD size\n \nCould not get SD card size.\nThis should not happen.\nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 else
     strsplit -f -b SDFREE_VALUE $[SDFREE] " "
@@ -166,12 +198,15 @@ else
             goto SDFREE_NEXT
         end
     end
-    fdummy -o -s 0:/finalize/nospace 400
+    if not find 0:/gm9/flags NULL
+        mkdir -o -s 0:/gm9/flags
+    end
+    fdummy -o -s 0:/gm9/flags/nospace 400
     if chk $[ONTYPE] O3DS
-        set PREVIEW_MODE "0:/finalize/img/error04.png"
+        set PREVIEW_MODE "9:/finalize/img/error04.png"
         echo "Error #04: No space\n \nInsufficient space on SD card.\nYou need 1.0GB, but you have $[SDFREE].\nMake some space, then try again.\n \nTIP: You can temporarily remove the Nintendo 3DS\nand DCIM folders from your SD card\nto make enough space."
     else
-        set PREVIEW_MODE "0:/finalize/img/error04.png"
+        set PREVIEW_MODE "9:/finalize/img/error04.png"
         echo "Error #04: No space\n \nInsufficient space on SD card.\nYou need 1.4GB, but you have $[SDFREE].\nMake some space, then try again.\n \nTIP: You can temporarily remove the Nintendo 3DS\nand DCIM folders from your SD card\nto make enough space."
     end
 end
@@ -191,13 +226,13 @@ end
 # Check for title database
 
 if not find A:/dbs/title.db NULL
-	set PREVIEW_MODE "0:/finalize/img/error05.png"
+	set PREVIEW_MODE "9:/finalize/img/error05.png"
 	ask "Information #05: No title database\n \nTitle database not found.\nPress (A) to automatically import one.\n(A title database is necessary\nfor this script to run.)"
 	goto IMPORT
 end
 
 if not imgmount A:/dbs/title.db
-	set PREVIEW_MODE "0:/finalize/img/error16.png"
+	set PREVIEW_MODE "9:/finalize/img/error16.png"
 	if ask "Error #16: Title database mount fail\n \nTitle database exists, but could not\nbe accessed.\n \nAttempt donor import?\n(If you have anything installed on\nthis console, this may result in\ninstalled digital games being rendered\n INACCESSIBLE!)"
 	goto IMPORT
 	else
@@ -211,26 +246,26 @@ goto MAIN
 
 mkdir -o -s A:/dbs
 
-if not cp -w -o -s 0:/finalize/donor.db A:/dbs/title.db
-	set PREVIEW_MODE "0:/finalize/img/error12a.png"
+if not cp -w -o -s 9:/finalize/donor.db A:/dbs/title.db
+	set PREVIEW_MODE "9:/finalize/img/error12a.png"
 	echo "Error #12a: Copy title.db fail\n \nTitle database could not be copied to A:/dbs.\n(Is your SD card locked?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not cp -w -o -s 0:/finalize/donor.db A:/dbs/import.db
-	set PREVIEW_MODE "0:/finalize/img/error12b.png"
+if not cp -w -o -s 9:/finalize/donor.db A:/dbs/import.db
+	set PREVIEW_MODE "9:/finalize/img/error12b.png"
 	echo "Error #12b: Copy import.db fail\n \nTitle database could not be copied to A:/dbs.\n(Is your SD card locked?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
 
 if not fixcmac A:/dbs/title.db
-	set PREVIEW_MODE "0:/finalize/img/error13a.png"
+	set PREVIEW_MODE "9:/finalize/img/error13a.png"
 	echo "Fatal Error #13a: Fix CMAC fail\n \nCMACs could not be fixed for title database.\n(How did this happen?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
 
 if not fixcmac A:/dbs/import.db
-	set PREVIEW_MODE "0:/finalize/img/error13b.png"
+	set PREVIEW_MODE "9:/finalize/img/error13b.png"
 	echo "Fatal Error #13b: Fix CMAC fail\n \nCMACs could not be fixed for title database.\n(How did this happen?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
@@ -249,44 +284,41 @@ allow 1:
 set PREVIEW_MODE "Checking for problems... DONE\nAsking for permission... DONE\n> Installing homebrew...\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
 
 # Install base homebrew applications
+# Can't be issues with the copy anymore...
 
-if not install 0:/finalize/Anemone3DS.cia
-	if not find 0:/finalize/img/error14a.png NULL
-		echo "Error #14g: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\nAlso, script graphics are missing.\n \nTry re-running finalize_helper, or ask for help\non Discord: https://discord.gg/MWxPgEp"
-		poweroff
-	end
-	set PREVIEW_MODE "0:/finalize/img/error14a.png"
-	echo "Error #14a: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/Anemone3DS.cia
+	set PREVIEW_MODE "9:/finalize/img/error14a.png"
+	echo "Error #14a: CIA install fail\n \nA CIA (Anemone3DS) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not install 0:/finalize/Checkpoint.cia
-	set PREVIEW_MODE "0:/finalize/img/error14b.png"
-	echo "Error #14b: CIA install fail\n \nA CIA (Checkpoint) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/Checkpoint.cia
+	set PREVIEW_MODE "9:/finalize/img/error14b.png"
+	echo "Error #14b: CIA install fail\n \nA CIA (Checkpoint) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not install 0:/finalize/FBI.cia
-	set PREVIEW_MODE "0:/finalize/img/error14c.png"
-	echo "Error #14c: CIA install fail\n \nA CIA (FBI) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/FBI.cia
+	set PREVIEW_MODE "9:/finalize/img/error14c.png"
+	echo "Error #14c: CIA install fail\n \nA CIA (FBI) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not install 0:/finalize/ftpd.cia
-	set PREVIEW_MODE "0:/finalize/img/error14d.png"
-	echo "Error #14d: CIA install fail\n \nA CIA (ftpd) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/ftpd.cia
+	set PREVIEW_MODE "9:/finalize/img/error14d.png"
+	echo "Error #14d: CIA install fail\n \nA CIA (ftpd) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not install 0:/finalize/Homebrew_Launcher.cia
-	set PREVIEW_MODE "0:/finalize/img/error14e.png"
-	echo "Error #14e: CIA install fail\n \nA CIA (Homebrew Launcher) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/Homebrew_Launcher.cia
+	set PREVIEW_MODE "9:/finalize/img/error14e.png"
+	echo "Error #14e: CIA install fail\n \nA CIA (Homebrew Launcher) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
-if not install 0:/finalize/Universal-Updater.cia
-	set PREVIEW_MODE "0:/finalize/img/error14f.png"
-	echo "Error #14f: CIA install fail\n \nA CIA (Universal-Updater) failed to install.\n \nTry replacing it with a freshly\ndownloaded copy, or ask for help\non Discord: https://discord.gg/MWxPgEp"
+if not install 9:/finalize/Universal-Updater.cia
+	set PREVIEW_MODE "9:/finalize/img/error14f.png"
+	echo "Error #14f: CIA install fail\n \nA CIA (Universal-Updater) failed to install.\n \nAsk for help on Discord: https://discord.gg/MWxPgEp"
 	poweroff
 end
 
@@ -443,7 +475,7 @@ findnot 0:/gm9/backups/$[DATESTAMP]_$[SERIAL]_sysnand_??.bin OUTPATH
 
 if	cp -h S:/nand_minsize.bin $[OUTPATH]
 else
-	set PREVIEW_MODE "0:/finalize/img/error06.png"
+	set PREVIEW_MODE "9:/finalize/img/error06.png"
  	echo "Error #06: NAND backup fail\n \nThe NAND backup failed for some reason.\n(Did you cancel it?)\nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
@@ -459,7 +491,7 @@ findnot 0:/gm9/backups/$[DATESTAMP]_$[SERIAL]_sysnand_??.bin OUTPATH
 
 if	cp -h S:/nand_minsize.bin $[OUTPATH]
 else
-	set PREVIEW_MODE "0:/finalize/img/error06_nospace.png"
+	set PREVIEW_MODE "9:/finalize/img/error06_nospace.png"
  	echo "Error #06: NAND backup fail\n \nThe NAND backup failed for some reason.\n(Do you have enough space?)\nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
@@ -473,12 +505,12 @@ end
 	
 set BACKUPFLAG 0:/gm9/flags/BACKUPFLAG
 if not fdummy $[BACKUPFLAG] 400
-	set PREVIEW_MODE "0:/finalize/img/error15.png"
+	set PREVIEW_MODE "9:/finalize/img/error15.png"
  	echo "Fatal Error #15: File creation fail\n \nCould not create 0:/gm9/flags/BACKUPFLAG.\n(How did this happen?)\n \nAsk for help on Discord:\nhttps://discord.gg/MWxPgEp"
 	poweroff
 end
 
-set PREVIEW_MODE "0:/finalize/img/emptysd_complete.png"
+set PREVIEW_MODE "9:/finalize/img/emptysd_complete.png"
 echo "NAND backup complete.\nCopy the two SysNAND files in SD:/gm9/backups\nto a safe location on your computer, then\ndelete them from your SD card.\nThen, copy your Nintendo 3DS folder back\nto your SD card and re-run this script.\n \nIf you don't have a Nintendo 3DS folder backup,\nopen HOME Menu, then re-run this script."
 poweroff
 
@@ -489,25 +521,25 @@ if find 0:/gm9/flags/INSTALLFLAG NULL
 	goto INSTALLSKIP
 end
 
-cp -w 0:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
+cp -w 9:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
 rm -o -s 0:/gm9/scripts/finalize.gm9
 rm -o -s 0:/finalize.romfs
 
-set PREVIEW_MODE "0:/finalize/img/complete.png"
+set PREVIEW_MODE "9:/finalize/img/complete.png"
 
 echo "Success: Setup complete! :D\n \nRemember to backup the contents of\nSD:/gm9/backups to somewhere safe."
-rm -o -s 0:/finalize
+# rm -o -s 0:/finalize
 rm -o -s 0:/gm9/flags
 
 poweroff
 
 @BACKUPSKIP
 
-cp -w 0:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
+cp -w 9:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
 rm -o -s 0:/gm9/scripts/finalize.gm9
 rm -o -s 0:/finalize.romfs
 
-set PREVIEW_MODE "0:/finalize/img/complete_backupflag.png"
+set PREVIEW_MODE "9:/finalize/img/complete_backupflag.png"
 
 if find 0:/gm9/flags/INSTALLFLAG NULL
 	echo "Success: Setup complete! :D\n \nRemember to backup the contents of\nSD:/gm9/backups to somewhere safe.\n \nWARNING: NAND backup automatically skipped!\nIf you need to make another backup,\nfollow these instructions:\nhttps://tinyurl.com/gm9nandbackup\nWARNING: CIA install skipped by user request!"
@@ -515,27 +547,27 @@ else
 	echo "Success: Setup complete! :D\n \nRemember to backup the contents of\nSD:/gm9/backups to somewhere safe.\n \nWARNING: NAND backup automatically skipped!\nIf you need to make another backup,\nfollow these instructions:\nhttps://tinyurl.com/gm9nandbackup"
 end
 
-rm -o -s 0:/finalize
+# rm -o -s 0:/finalize
 rm -o -s 0:/gm9/flags
 poweroff
 
 @BACKUPDUPE
 
-set PREVIEW_MODE "0:/finalize/img/error17.png"
+set PREVIEW_MODE "9:/finalize//img/error17.png"
 
 ask "Information #17: Duplicate NAND backup\nIt looks like you've already made a NAND backup.\n \nIf you want to install homebrew applications,\nyou should copy your NAND backup from\nSD:/gm9/backups to a safe location on your computer,\ndelete the backup from the SD card, and\ncopy the Nintendo 3DS folder back to your SD card.\n(If you've lost the folder, you can regenerate\none by opening HOME Menu with this SD inserted.)\n \nPress (A) to make another NAND backup anyway.\nPress (B) to cancel."
 goto NOSPACE
 
 @INSTALLSKIP
 
-cp -w 0:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
+cp -w 9:/finalize/GM9Megascript.gm9 0:/gm9/scripts/GM9Megascript.gm9
 rm -o -s 0:/gm9/scripts/finalize.gm9
 rm -o -s 0:/finalize.romfs
 
-set PREVIEW_MODE "0:/finalize/img/complete_installflag.png"
+set PREVIEW_MODE "9:/finalize/img/complete_installflag.png"
 
 echo "Success: Setup complete! :D\n \nRemember to backup the contents of\nSD:/gm9/backups to somewhere safe.\n \nWARNING: CIA install skipped by user request!"
-rm -o -s 0:/finalize
+# rm -o -s 0:/finalize
 rm -o -s 0:/gm9/flags
 
 poweroff

@@ -82,16 +82,12 @@ if not sha 0:/finalize.romfs FINALIZE_SHA256SUM
     poweroff
 else
     imgmount 0:/finalize.romfs
-    if not find 0:/finalize NULL
-        mkdir 0:/finalize
-    end
-    cp -w -o -s G:/finalize 0:/finalize
-    cp -w -o -s 0:/finalize/GodMode9.firm 0:/luma/payloads/GodMode9.firm
+    cp -w -o -s G:/finalize/GodMode9.firm 0:/luma/payloads/GodMode9.firm
     if not find 0:/gm9/scripts NULL
         mkdir 0:/gm9/scripts
     end
-    cp -w -o -s 0:/finalize/finalize.gm9 0:/gm9/scripts/finalize.gm9
-    rm -o -s 0:/finalize.romfs
+    cp -w -o -s G:/finalize/finalize.gm9 0:/gm9/scripts/finalize.gm9
+    imgumount
 end
 
 if not boot 0:/luma/payloads/GodMode9.firm
