@@ -17,7 +17,7 @@ Scripts relating to Finalizing Setup on https://3ds.hacks.guide/finalizing-setup
 ## Bundled software
 The following repositories have their compiled builds in this software package:
 
-- [FBI](https://github.com/Steveice10/FBI)
+- [FBI](https://github.com/nh-server/FBI-NH/tree/37e7c40f1d9f2f332edd036017f01d72cdcffbae)
 - [Homebrew Launcher Loader](https://github.com/PabloMK7/homebrew_launcher_dummy)
 - [Anemone3DS](https://github.com/astronautlevel2/Anemone3DS)
 - [Checkpoint](https://github.com/FlagBrew/Checkpoint)
