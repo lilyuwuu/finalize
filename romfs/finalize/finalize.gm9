@@ -1,5 +1,5 @@
 # Script for https://3ds.hacks.guide/finalizing-setup
-# Ver. 1.9.0 - Last modified: 2024-09-15
+# Ver. 1.9.0 - Last modified: 2024-10-11
 # GodMode9 scripts can be dangerous!
 # Visit https://github.com/hacks-guide/finalize/releases to verify the integrity of this script.
 # Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff), J0n_b0 (MSET9 check), Naim2000 (better Nintendo 3DS folder check)
@@ -433,8 +433,6 @@ rm -o -s 0:/petitcom_eu.icn
 
 ## MSET9
 
-rm -o -s 0:/MSET9-Windows.bat
-rm -o -s 0:/MSET9-macOS.command
 rm -o -s 0:/mset9.bat
 rm -o -s 0:/MSET9-Windows.bat
 rm -o -s 0:/mset9.command
