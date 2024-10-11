@@ -433,8 +433,6 @@ rm -o -s 0:/petitcom_eu.icn
 
 ## MSET9
 
-rm -o -s 0:/MSET9-Windows.bat
-rm -o -s 0:/MSET9-macOS.command
 rm -o -s 0:/mset9.bat
 rm -o -s 0:/MSET9-Windows.bat
 rm -o -s 0:/mset9.command
