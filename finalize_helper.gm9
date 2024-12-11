@@ -1,5 +1,5 @@
 # Scriptrunner for https://3ds.hacks.guide/finalizing-setup file copying operations
-# Ver. 1.9.0 - Last modified: 2024-04-07
+# Ver. 1.10.0 - Last modified: 2024-04-07
 
 set PREVIEW_MODE "Finalizing Setup Helper Script\n> Copying SD files..."
 
