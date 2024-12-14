@@ -1,3 +1,4 @@
 [submodule "GodMode9"]
 	path = GodMode9
-	url = https://github.com/d0k3/GodMode9
+	url = https://github.com/ihaveamac/GodMode9
+	branch = real-lua-attempt
