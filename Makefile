@@ -17,4 +17,4 @@ builds/x_finalize_helper.firm: builds/finalize.romfs
 clean:
 	@rm -rf builds
 	@$(MAKE) -C GodMode9 clean
-	@rm GodMode9/data/autorun.gm9
+	@rm GodMode9/data/autorun.lua
