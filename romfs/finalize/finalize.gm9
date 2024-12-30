@@ -5,7 +5,9 @@
 # Credits: GM9Megascript contributors ("Scripts from Plailect's Guide"), Mr. Burguers (SD card capacity check), ihaveamac (title.db stuff), J0n_b0 (MSET9 check), Naim2000 (better Nintendo 3DS folder check)
 
 rm -o -s 0:/luma/payloads/finalize_helper.firm
-rm -o -s 0:/luma/payloads/*_finalize_helper.firm
+for 0:/luma/payloads *_finalize_helper.firm
+	rm -o -s $[FORPATH]
+next
 
 set PREVIEW_MODE "> Checking for problems...\nAsking for permission... ---\nInstalling homebrew... ---\nCopying GodMode9 to CTRNAND... ---\nCleaning up SD card... ---\nBacking up essential.exefs... ---\nBacking up NAND... ---"
 
@@ -333,6 +335,13 @@ end
 # Copy GodMode9 to CTRNAND
 
 cp -w -o -s 0:/luma/payloads 1:/rw/luma/payloads
+
+# Delete Finalizing Setup Helper on CTRNAND if it exists
+
+rm -o -s 1:/rw/luma/payloads/finalize_helper.firm
+for 1:/rw/luma/payloads *_finalize_helper.firm
+	rm -o -s $[FORPATH]
+next
 
 set PREVIEW_MODE "Checking for problems... DONE\nAsking for permission... DONE\nInstalling homebrew... DONE\nCopying GodMode9 to CTRNAND... DONE\n> Cleaning up SD card...\nBacking up essential.exefs... ---\nBacking up NAND... ---"
 
